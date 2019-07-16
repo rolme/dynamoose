@@ -1,15 +1,15 @@
 {
-  "name": "dynamoose",
-  "version": "1.10.0",
+  "name": "@replicon/dynamoose",
+  "version": "1.11.0",
   "description": "Dynamoose is a modeling tool for Amazon's DynamoDB (inspired by Mongoose)",
   "typings": "./dynamoose.d.ts",
   "homepage": "https://dynamoosejs.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dynamoosejs/dynamoose"
+    "url": "https://github.com/repl-sean-heintz/dynamoose"
   },
   "bugs": {
-    "url": "https://github.com/dynamoosejs/dynamoose/issues"
+    "url": "https://github.com/repl-sean-heintz/dynamoose/issues"
   },
   "main": "dist/index.js",
   "files": [
