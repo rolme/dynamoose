@@ -1426,4 +1426,88 @@ describe('Plugin', function () {
 
     emitObject.should.have.propertyByPath('event', 'error').which.is.not.eql(null).and.has.property('message');
   });
+
+  const setupBatchGetTest = async (configurePluginCallback) => {
+    const testPlugin = function (plugin) {
+      plugin.setName('Plugin A');
+      configurePluginCallback(plugin);
+    };
+    Model.plugin(testPlugin);
+
+    const objects = [
+      {
+        'id': 13,
+        'name': 'Foobar',
+        'owner': 'Fizz',
+        'age': 1
+      },
+      {
+        'id': 14,
+        'name': 'Buzz',
+        'owner': 'Fizz',
+        'age': 1
+      }
+    ];
+
+    await Model.batchPut(objects);
+    const models = await Model.batchGet([{'id': 13}, {'id': 14}]);
+
+    return models;
+  };
+
+  it('Should pass emit object to model:batchget batchget:called callback', async () => {
+    let emitObject;
+    await setupBatchGetTest((plugin) => {
+      plugin.on('model:batchget', 'batchget:called', (obj) => { emitObject = obj; });
+    });
+
+    should.exist(emitObject);
+    emitObject.should.have.keys('model', 'modelName', 'plugins', 'plugin', 'event', 'actions');
+    emitObject.should.have.propertyByPath('actions', 'updateCallback').which.is.Function;
+    emitObject.should.have.propertyByPath('actions', 'updateKeys').which.is.Function;
+    emitObject.should.have.propertyByPath('actions', 'updateOptions').which.is.Function;
+  });
+
+  it('Should stop execution if model:batchget batchget:called returns false', async () => {
+    const result = await setupBatchGetTest((plugin) => {
+      plugin.on('model:batchget', 'batchget:called', () => false);
+    });
+
+    result.should.be.undefined;
+  });
+
+  it('should pass emit object to model:batchget request:pre callback', async () => {
+    let emitObject;
+    await setupBatchGetTest((plugin) => {
+      plugin.on('model:batchget', 'request:pre', (obj) => { emitObject = obj; });
+    });
+
+    emitObject.should.have.propertyByPath('actions', 'updateBatchReq').which.is.Function;
+  });
+
+  it('should stop execution if model:batchget request:pre returns false', async () => {
+    const result = await setupBatchGetTest((plugin) => {
+      plugin.on('model:batchget', 'request:pre', () => false);
+    });
+
+    result.should.be.undefined;
+  });
+
+  it('should pass emit object to model:batchget request:post callback', async () => {
+    let emitObject;
+    await setupBatchGetTest((plugin) => {
+      plugin.on('model:batchget', 'request:post', (obj) => { emitObject = obj; });
+    });
+
+    emitObject.should.have.propertyByPath('actions', 'updateError').which.is.Function;
+    emitObject.should.have.propertyByPath('actions', 'updateData').which.is.Function;
+  });
+
+  it('should stop execution if model:batchget request:post returns false', async () => {
+    const result = await setupBatchGetTest((plugin) => {
+      plugin.on('model:batchget', 'request:post', () => false);
+    });
+
+    result.should.be.undefined;
+  });
 });
